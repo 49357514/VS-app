@@ -110,6 +110,7 @@ def web_app(uploaded_csv):
 if uploaded_file is not None:
     uploaded_csv = pd.read_csv(uploaded_file)
     app.write(uploaded_csv)
+    web_app(uploaded_csv)
 
     
 else:
