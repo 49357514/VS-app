@@ -2,18 +2,24 @@ import pandas as pd
 import streamlit as app
 import subprocess
 from rdkit import Chem
-from rdkit.Chem import Lipinski, Descriptors
+from rdkit.Chem import Descriptors
 import numpy as np
 import os
+import joblib
+
 app.set_page_config(page_title = 'Virtual Screenig Tool for Aromatase Receptor',
                    layout = 'wide')
 
 app.write("""
          # Virtual Screenig Tool for Aromatase Receptor
+          ## [Modelling the Reproductive Health and Treatment Outcomes](https://404.com/)
+          ### by Sudipta Sardar, Somenath Dutta, Ganesh Jadhav
          """)
 
-with app.sidebar.header('Upload for Prediction:'):
-    uploaded_file = app.sidebar.file_uploader("Upload your smile in CSV format:", type=['csv'])
+model = joblib.load('model/rf_model.joblib')
+
+with app.header('Upload for Prediction:'):
+    uploaded_file = app.file_uploader("Upload your smile in CSV format:", type=['csv'])
 
 
 def calculate_lipinski(smiles):
@@ -35,7 +41,7 @@ def calculate_lipinski(smiles):
         else:
             baseData = np.vstack([baseData, data])
         i = i+1
-    descriptors = pd.DataFrame(data = baseData, columns = ['MW', 'LogP', 'NumHDonors', 'NumHAcceptors'])
+    descriptors = pd.DataFrame(data = baseData, columns = ['mol_Wt', 'cLogP', 'H_Donors', 'H_Acceptors'])
     return descriptors
 
 def fingerprint_calculator(smiles_df):
@@ -55,16 +61,18 @@ def fingerprint_calculator(smiles_df):
         print(err)
     return
 
-# def make_pred(df):
-#     prediction = model.predict(df)
-#     app.write(prediction)
-#     return
+def make_pred(df):
+    prediction = model.predict(df)
+    # app.write(prediction)
+    return prediction
 
 def feature_selection(fingerprint_df):
     
-    std_df = pd.read_csv('dataset.csv')
+    std_df = pd.read_csv('./datasets/model/training_X.csv')
     X_test = fingerprint_df[list(std_df.columns)] ## getting columns of the training dataset
-    return
+    y_pred = make_pred(X_test)
+    X_test['pIC50'] = y_pred
+    return X_test
 
 def web_app(uploaded_csv):
     ## Calculate Lipinski's RO5
@@ -90,7 +98,12 @@ def web_app(uploaded_csv):
     fingerprint_joined = pd.merge(lipinski_joined, fingerprint_df, on=['molecule_chembl_id'], how='right')
     app.subheader('Calculated Fingerprint of uploaded dataset :')
     app.write(fingerprint_joined)
-    feature_selection(fingerprint_df=fingerprint_joined)
+    pred_after_fs = feature_selection(fingerprint_df=fingerprint_joined)
+
+    app.info('Your Dataset Prediction successfullly completed ...')
+    app.subheader('Predicted pIC50 Values of your dataset : ')
+    uploaded_csv['pIC50'] = pred_after_fs['pIC50']
+    app.write(uploaded_csv)
     return
 
 
