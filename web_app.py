@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as app
-import joblib
 import subprocess
 from rdkit import Chem
 from rdkit.Chem import Lipinski, Descriptors
@@ -16,7 +15,6 @@ app.write("""
 with app.sidebar.header('Upload for Prediction:'):
     uploaded_file = app.sidebar.file_uploader("Upload your smile in CSV format:", type=['csv'])
 
-# model = joblib.load('SVR.joblib')
 
 def calculate_lipinski(smiles):
     mol_data = []
