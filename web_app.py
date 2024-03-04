@@ -16,7 +16,7 @@ app.write("""
           ### by Sudipta Sardar, Somenath Dutta, Ganesh Jadhav
          """)
 
-model = joblib.load('model/rf_model.joblib')
+model = joblib.load('model/SVR_model.joblib')
 
 with app.header('Upload for Prediction:'):
     uploaded_file = app.file_uploader("Upload your smile in CSV format:", type=['csv'])
