@@ -103,7 +103,7 @@ def web_app(uploaded_csv):
     app.info('Your Dataset Prediction successfullly completed ...')
     app.subheader('Predicted pIC50 Values of your dataset : ')
     uploaded_csv['pIC50'] = pred_after_fs['pIC50']
-    app.write(uploaded_csv)
+    app.write(uploaded_csv.sort_values(by = ['pIC50'], ascending = False))
     return
 
 
